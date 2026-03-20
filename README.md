@@ -2,6 +2,35 @@
 
 > *Fine-tune a website-specific navigation expert in minutes. Make your browser agent 4× faster and eliminate wrong trajectories.*
 
+## TL;DR
+
+We built **WebTuning** — a pipeline that automatically trains a site-specific navigation expert for any website, then plugs it into a browser agent so the agent stops exploring and starts executing.
+
+**How it works in one sentence:** Give it a URL and a list of things the model should know. The Auto Agent crawls the site with Playwright, generates training data, fine-tunes a Qwen/Qwen3-8B model on Pioneer, evaluates it, iterates, and registers the trained expert. From that point on, any browser agent that visits that domain gets instant, accurate navigation steps on its first tool call.
+
+**Results:**
+
+| Domain | Baseline | After WebTuning | Improvement |
+|---|---|---|---|
+| Google Cloud Console | 93.9% | **100%** | +6.1pp — 2 training iterations |
+| Hacker News | 66.7% | **96.7%** | +30pp — 5 training iterations |
+
+**Browser agent impact (GCP firewall rules task):**
+
+| | With Expert | Without Expert |
+|---|---|---|
+| Steps | **7** | 30+ |
+| Time | **43 seconds** | 3 minutes 6 seconds |
+| Wrong turns | **0** | 10+ (landed in Marketplace, IAM, Cloud Armor...) |
+
+![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
+
+> 💡 *Click the image to view full screen — text is easier to read at full size.*
+
+> *The green path is what the expert-assisted agent does. Every red node is a wrong turn the no-expert agent actually took.*
+
+---
+
 ## Table of Contents
 
 1. [Market Opportunity](#market-opportunity)
