@@ -1,6 +1,6 @@
 # WebTuning
 
-> *Fine-tune a website-specific navigation expert in minutes. Make your browser agent 4× faster and eliminate wrong trajectories.*
+> *Fine-tune a website-specific navigation expert. Make your browser agent 4× faster and eliminate wrong trajectories.*
 
 ## TL;DR
 
