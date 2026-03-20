@@ -8,20 +8,21 @@ We built **WebTuning** — a pipeline that automatically trains a site-specific 
 
 **How it works in one sentence:** Give it a URL and a list of things the model should know. The Auto Agent crawls the site with Playwright, generates training data, fine-tunes a Qwen/Qwen3-8B model on Pioneer, evaluates it, iterates, and registers the trained expert. From that point on, any browser agent that visits that domain gets instant, accurate navigation steps on its first tool call.
 
-**Results:**
-
-| Domain | Baseline | After WebTuning | Improvement |
-|---|---|---|---|
-| Google Cloud Console | 93.9% | **100%** | +6.1pp — 2 training iterations |
-| Hacker News | 66.7% | **96.7%** | +30pp — 5 training iterations |
-
-**Browser agent impact (GCP firewall rules task):**
+**Google Cloud Console — Create Firewall Rule:**
 
 | | With Expert | Without Expert |
 |---|---|---|
 | Steps | **7** | 30+ |
 | Time | **43 seconds** | 3 minutes 6 seconds |
-| Wrong turns | **0** | 10+ (landed in Marketplace, IAM, Cloud Armor...) |
+| Wrong turns | **0** | 10+ (Marketplace, IAM, Cloud Armor, Subnets...) |
+
+**Hacker News — Find noprocrast + user favorites:**
+
+| | With Expert | Without Expert |
+|---|---|---|
+| Steps | **6** | 11 |
+| Expert answer | ✅ Correct on step 1 | ❌ Must scrape FAQ + crawl profiles |
+| Wrong turns | **0** | Full exploration required |
 
 ![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
 
