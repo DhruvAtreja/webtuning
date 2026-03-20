@@ -128,11 +128,11 @@ Without the expert, the agent visited APIs & Services, IAM, VPC Networks, Subnet
 
 **With Navigation Expert — 7 steps, 43 seconds:**
 
-[demo_videos/demo_expert_7steps.webm](demo_videos/demo_expert_7steps.webm)
+<video src="demo_videos/demo_expert_7steps.webm" controls width="100%"></video>
 
 **Without Navigation Expert — 30+ steps, 3 minutes 6 seconds:**
 
-[demo_videos/demo_no_expert_30steps.webm](demo_videos/demo_no_expert_30steps.webm)
+<video src="demo_videos/demo_no_expert_30steps.webm" controls width="100%"></video>
 
 ### Navigation Expert Training Results
 

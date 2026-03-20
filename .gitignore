@@ -15,8 +15,9 @@ data/gcp/
 # Browser agent screenshots dumped at root during testing
 hn_*.png
 
-# Demo videos (large binary files)
-demo_videos/*.webm
+# Unnamed recording artifacts
+demo_videos/2f692e08a196b1dd0a7df488fab1acd7.webm
+demo_videos/7a6de2e965fc97cb91cd433ebd6288ba.webm
 
 # GCP session cookies — never commit auth credentials
 gcp_session.json
