@@ -8,11 +8,9 @@
 
 Browser automation is one of the fastest-growing categories in enterprise software — and one of the least solved.
 
-**The RPA and Agentic AI market is enormous:**
-- The RPA market is valued at **$35B in 2026**, projected to reach **$247B by 2035** (24% CAGR)
-- The broader Agentic AI market sits at **$7–10B in 2025–2026**, projected to reach **$93–199B by 2032–2034** (40–44% CAGR)
-- Agentic AI startups raised **$6B in VC funding in 2025 alone**
-- **45% of Fortune 500 companies** are actively piloting agentic systems
+Convergence AI's acquisition by Salesforce in May 2025 is particularly telling — Salesforce paid to integrate adaptive browser agents directly into Agentforce because the problem of navigating complex UIs is real, recurring, and enterprise-critical.
+
+**The problem is not solved.** Despite hundreds of millions in funding, the best browser agents still fail on ~40% of realistic tasks (WebArena SOTA: 61.7% in 2025). Production enterprise use requires 95%+ reliability. The gap is structural — and WebTuning directly addresses the root cause.
 
 **The browser agent category is exploding with capital:**
 
@@ -24,16 +22,6 @@ Browser automation is one of the fastest-growing categories in enterprise softwa
 | **Browser Use** | **$17M** | Seed | March 2025 |
 | **Convergence AI** | **$12M** → acquired by **Salesforce** | Pre-seed | Sept 2024 |
 | **Skyvern** | $2.7M | Seed | Dec 2025 |
-
-Convergence AI's acquisition by Salesforce in May 2025 is particularly telling — Salesforce paid to integrate adaptive browser agents directly into Agentforce because the problem of navigating complex UIs is real, recurring, and enterprise-critical.
-
-**Why enterprises need this now:**
-- Knowledge workers navigate **8–12 different web apps** in a typical workday
-- Data entry and validation tasks consume **25–30% of worker time**
-- Many enterprise systems — SAP, Salesforce, GCP Console, legacy healthcare portals — have **no API or an incomplete one**. The only interface is the browser.
-- Companies automating portal workflows report **80% reduction in processing time** and a payback period under 12 months
-
-**The problem is not solved.** Despite hundreds of millions in funding, the best browser agents still fail on ~40% of realistic tasks (WebArena SOTA: 61.7% in 2025). Production enterprise use requires 95%+ reliability. The gap is structural — and WebTuning directly addresses the root cause.
 
 ---
 
@@ -51,13 +39,13 @@ When a browser agent opens Google Cloud Console for the first time, it has no id
 
 The agent must *discover* all of this through trial and error — clicking, backtracking, getting redirected, trying again. Even state-of-the-art models like Claude Sonnet and GPT-4o, which perform near-perfectly on coding benchmarks, web QA, and reasoning tasks, still fail routinely at browser navigation. The reasons are structural:
 
-**1. Websites are not documented.** There is no spec sheet for how Amazon's filter sidebar works, or which GCP menu leads to firewall policies. This knowledge exists only in the UI itself, and the only way to acquire it is to navigate the site.
+**1. Websites are not documented.** 
 
-**2. Navigation is stateful and sequential.** Unlike a coding task where the model can see the entire codebase at once, browser navigation requires committing to a path — clicking a link means leaving the previous page. Every wrong turn is expensive.
+**2. Navigation is stateful and sequential.** 
 
-**3. UI changes faster than training data.** Websites redesign constantly. A model trained in 2024 may have memorised the old GCP layout; the 2025 layout has moved entire sections. The model's parametric knowledge is always stale.
+**3. UI changes faster than training data.** 
 
-**4. The exploration cost compounds.** At each step the agent has 5–15 possible actions. A task requiring 6 correct decisions has a search space of up to 15⁶ = 11 million possible trajectories. Without prior knowledge, the agent must explore a large fraction of this space — which is why even simple tasks can take 20–30 steps and several minutes.
+**4. The exploration cost compounds.**
 
 The result: browser agents today are notoriously inefficient, unreliable, and expensive on unfamiliar websites. Every session starts from zero.
 
@@ -82,13 +70,13 @@ The diagram below illustrates what a browser agent's trajectory actually looks l
 The system works in three phases:
 
 ### Phase 1 — Crawl
-An Auto Agent (LangGraph + Claude, running in a Modal sandbox) receives a URL and a list of target skills. It:
+Auto Agent (running in a Modal sandbox) receives a URL and a list of target skills. It:
 - Installs Playwright and crawls 20–30 pages of the site
 - Runs web searches to fill in knowledge the UI doesn't surface
 - Generates 100–150 Q&A training pairs covering every target skill, including graceful declines for things the site genuinely doesn't support
 
 ### Phase 2 — Train
-The Q&A pairs are uploaded to Pioneer as a decoder dataset. A `Qwen/Qwen3-8B` model is fine-tuned for 3 epochs. The Auto Agent evaluates the model against a held-out test set, identifies failure patterns, and iterates — typically 2–5 training runs — until the model handles the site reliably.
+The Q&A pairs are uploaded to Pioneer as a decoder dataset. A `Qwen/Qwen3-8B` model is fine-tuned. The Auto Agent evaluates the model against a held-out test set, identifies failure patterns, and iterates — typically 2–5 training runs — until the model handles the site reliably.
 
 ### Phase 3 — Deploy
 The trained model is registered in a local registry keyed by domain. Any browser agent that visits that domain can call `ask_website_expert(domain, question)` and receive instant, accurate navigation steps — without a single page load.
