@@ -1,0 +1,358 @@
+# WebTuning
+
+> *Fine-tune a website-specific navigation expert in minutes. Make your browser agent 4× faster and eliminate wrong trajectories.*
+
+---
+
+## Market Opportunity
+
+Browser automation is one of the fastest-growing categories in enterprise software — and one of the least solved.
+
+**The RPA and Agentic AI market is enormous:**
+- The RPA market is valued at **$35B in 2026**, projected to reach **$247B by 2035** (24% CAGR)
+- The broader Agentic AI market sits at **$7–10B in 2025–2026**, projected to reach **$93–199B by 2032–2034** (40–44% CAGR)
+- Agentic AI startups raised **$6B in VC funding in 2025 alone**
+- **45% of Fortune 500 companies** are actively piloting agentic systems
+
+**The browser agent category is exploding with capital:**
+
+| Company | Raised | Round | Date |
+|---|---|---|---|
+| **Browserbase** (Stagehand) | **$67.5M** at **$300M valuation** | Series B | June 2025 |
+| **Adept AI** | **$415M** total | Series B | 2023 |
+| **Simular** | **$27M** | Series A | Dec 2025 |
+| **Browser Use** | **$17M** | Seed | March 2025 |
+| **Convergence AI** | **$12M** → acquired by **Salesforce** | Pre-seed | Sept 2024 |
+| **Skyvern** | $2.7M | Seed | Dec 2025 |
+
+Convergence AI's acquisition by Salesforce in May 2025 is particularly telling — Salesforce paid to integrate adaptive browser agents directly into Agentforce because the problem of navigating complex UIs is real, recurring, and enterprise-critical.
+
+**Why enterprises need this now:**
+- Knowledge workers navigate **8–12 different web apps** in a typical workday
+- Data entry and validation tasks consume **25–30% of worker time**
+- Many enterprise systems — SAP, Salesforce, GCP Console, legacy healthcare portals — have **no API or an incomplete one**. The only interface is the browser.
+- Companies automating portal workflows report **80% reduction in processing time** and a payback period under 12 months
+
+**The problem is not solved.** Despite hundreds of millions in funding, the best browser agents still fail on ~40% of realistic tasks (WebArena SOTA: 61.7% in 2025). Production enterprise use requires 95%+ reliability. The gap is structural — and WebTuning directly addresses the root cause.
+
+---
+
+## Why Browser Agents Still Fail
+
+LLMs are remarkable. They write production code, pass bar exams, debug complex systems, and reason through multi-step problems with near-human accuracy. But ask one to navigate a website it hasn't seen before — and it falls apart.
+
+**This is not a model intelligence problem. It is a knowledge problem.**
+
+When a browser agent opens Google Cloud Console for the first time, it has no idea that:
+- Firewall Rules moved from *VPC Network* to *Network Security* in a recent UI update
+- Clicking *Create* on the wrong tab opens an entirely different form
+- The search bar finds docs and settings, not just pages
+- Some services redirect to a Marketplace page until you manually enable the API
+
+The agent must *discover* all of this through trial and error — clicking, backtracking, getting redirected, trying again. Even state-of-the-art models like Claude Sonnet and GPT-4o, which perform near-perfectly on coding benchmarks, web QA, and reasoning tasks, still fail routinely at browser navigation. The reasons are structural:
+
+**1. Websites are not documented.** There is no spec sheet for how Amazon's filter sidebar works, or which GCP menu leads to firewall policies. This knowledge exists only in the UI itself, and the only way to acquire it is to navigate the site.
+
+**2. Navigation is stateful and sequential.** Unlike a coding task where the model can see the entire codebase at once, browser navigation requires committing to a path — clicking a link means leaving the previous page. Every wrong turn is expensive.
+
+**3. UI changes faster than training data.** Websites redesign constantly. A model trained in 2024 may have memorised the old GCP layout; the 2025 layout has moved entire sections. The model's parametric knowledge is always stale.
+
+**4. The exploration cost compounds.** At each step the agent has 5–15 possible actions. A task requiring 6 correct decisions has a search space of up to 15⁶ = 11 million possible trajectories. Without prior knowledge, the agent must explore a large fraction of this space — which is why even simple tasks can take 20–30 steps and several minutes.
+
+The result: browser agents today are notoriously inefficient, unreliable, and expensive on unfamiliar websites. Every session starts from zero.
+
+---
+
+## The Decision Tree Problem
+
+![Browser navigation is hard](demo_videos/browser_navigation_is_hard.jpg)
+
+The diagram below illustrates what a browser agent's trajectory actually looks like. At every step, the agent must choose one branch to explore. Without prior knowledge of the site, it has to backtrack through wrong paths repeatedly before finding the goal.
+
+![General decision tree](demo_videos/tree_diagram_general.png)
+
+> *Task: "Find laptops under $500 with Prime shipping on Amazon." The green path is the optimal 6-step route. The red branches are the wrong turns an uninformed agent explores before finding it.*
+
+---
+
+## WebTuning: Site-Specific Navigation Experts
+
+**WebTuning** solves this by pre-training a lightweight navigation expert for a specific website before the browser agent ever visits it.
+
+The system works in three phases:
+
+### Phase 1 — Crawl
+An Auto Agent (LangGraph + Claude, running in a Modal sandbox) receives a URL and a list of target skills. It:
+- Installs Playwright and crawls 20–30 pages of the site
+- Runs web searches to fill in knowledge the UI doesn't surface
+- Generates 100–150 Q&A training pairs covering every target skill, including graceful declines for things the site genuinely doesn't support
+
+### Phase 2 — Train
+The Q&A pairs are uploaded to Pioneer as a decoder dataset. A `Qwen/Qwen3-8B` model is fine-tuned for 3 epochs. The Auto Agent evaluates the model against a held-out test set, identifies failure patterns, and iterates — typically 2–5 training runs — until the model handles the site reliably.
+
+### Phase 3 — Deploy
+The trained model is registered in a local registry keyed by domain. Any browser agent that visits that domain can call `ask_website_expert(domain, question)` and receive instant, accurate navigation steps — without a single page load.
+
+```
+User submits URL + target skills
+        │
+        ▼
+Auto Agent crawls site with Playwright (authenticated if needed)
+        │
+        ▼
+Generates training data → uploads to Pioneer → fine-tunes Qwen3-8B
+        │
+        ▼
+Evaluates on test set → iterates until model performs well
+        │
+        ▼
+Navigation expert registered for domain
+        │
+Browser agent calls ask_website_expert() before any navigation
+        └─► Gets exact URL + steps instantly → no exploration needed
+```
+
+---
+
+## Demo 1 — Google Cloud Console
+
+![Confused by Cloud](demo_videos/confused_by_cloud.jpg)
+
+**Task: Navigate to Firewall Rules and open the Create Firewall Rule form.**
+
+GCP Console is notoriously difficult to navigate. Its UI changes frequently, products move between menu sections, and many paths redirect to confusing intermediate pages. In this demo, Firewall Rules recently moved from *VPC Network → Firewall* to *Network Security → Firewall Policies* — a change that trips up both human users and AI agents.
+
+### Trajectory Comparison
+
+![GCP trajectory comparison](demo_videos/demo_diagram_comparison.png)
+
+| | With Navigation Expert | Without Navigation Expert |
+|---|---|---|
+| **Steps** | **7** | **30+** |
+| **Time** | **43 seconds** | **3 minutes 6 seconds** |
+| **Wrong turns** | **0** | **10+** |
+| **Dead ends** | None | Marketplace, Compute Engine, IAM, Cloud Armor, Subnets, Routes... |
+| **Expert answer** | Immediate — correct URL on step 1 | SENTINEL — had to explore blindly |
+
+Without the expert, the agent visited APIs & Services, IAM, VPC Networks, Subnets, Routes, accidentally ended up in the Compute Engine Marketplace (trying to enable an API it didn't need), bounced between Firewall Policies and Firewall Rules tabs multiple times, and visited Cloud Armor before finally finding the correct page.
+
+### Videos
+
+**With Navigation Expert — 7 steps, 43 seconds:**
+
+[demo_videos/demo_expert_7steps.webm](demo_videos/demo_expert_7steps.webm)
+
+**Without Navigation Expert — 30+ steps, 3 minutes 6 seconds:**
+
+[demo_videos/demo_no_expert_30steps.webm](demo_videos/demo_no_expert_30steps.webm)
+
+### Navigation Expert Training Results
+
+| Metric | Value |
+|---|---|
+| Base model | `Qwen/Qwen3-8B` |
+| Pages crawled | 31 |
+| Training examples | 116 |
+| Test set size | 33 questions |
+| Baseline accuracy (before fine-tuning) | 93.9% (31/33) |
+| Final accuracy | **100% (33/33)** |
+| Training iterations | 2 |
+
+**Quirks the model learned that the base model got wrong:**
+- Firewall Rules are under **Network Security**, not *Networking* or *VPC Network*
+- Project deletion uses **"Shut Down"** — not "Delete" — and has a 30-day recovery window
+- IAM audit logs live under **IAM & Admin → Audit Logs**, not under *Logging Explorer*
+- The URL pattern `?project=PROJECT_ID` works on any console page
+- `console.cloud.google.com/networking/firewalls/list` redirects to the new Firewall Manager URL
+
+### What the Expert Says
+
+```
+Q: How do I navigate to Firewall Rules in GCP Console?
+
+A: 1. Go to Network Security (console.cloud.google.com/networking/firewalls/list).
+   2. Or navigate via IAM & Admin → Network Security.
+   3. Or use the search bar and type "Firewall Rules" to locate it.
+   The page lists all ingress and egress rules with their target services,
+   protocols, and allowed sources/destinations.
+```
+
+```
+Q: How do I create a firewall rule to allow HTTPS traffic on port 443?
+
+A: 1. Go to Network Security → Firewall Rules.
+   2. Click Create Firewall Rule.
+   3. Set Name to allow-https.
+   4. Set Direction to INGRESS.
+   5. Under Targets, select All instances in the network.
+   6. Under Protocols and ports, enter tcp:443.
+   7. Set Priority to 1000.
+   8. Click Create.
+```
+
+---
+
+## Demo 2 — Hacker News
+
+**Task: Find the noprocrast feature and explain how to view a user's favorited posts.**
+
+Hacker News has a deliberately minimal UI with almost no documentation. Features like `noprocrast`, `showdead`, and the `favorites?id=USERNAME` URL pattern are invisible — they exist only in profile settings and an obscure FAQ. There are no breadcrumbs, no search-and-discover UI, and no onboarding. A browser agent exploring from scratch has to scrape the FAQ, click through profile pages, and try URL patterns by trial and error.
+
+### Results
+
+| Metric | With Expert | Without Expert |
+|---|---|---|
+| **Steps** | **6** | 11 |
+| **Expert answer on step 1** | ✅ Correct — noprocrast + favorites URL | ❌ SENTINEL |
+| **Exploration needed** | Minimal — trusted expert | Full FAQ scraping + profile crawling |
+
+### Navigation Expert Training Results
+
+| Metric | Value |
+|---|---|
+| Base model | `Qwen/Qwen3-8B` |
+| Pages crawled | 25 |
+| Training examples | 138 |
+| Test set size | 33 questions |
+| Baseline accuracy (before fine-tuning) | **66.7% (20/30)** |
+| Final accuracy | **96.7% (29/30) → ~100% on retry** |
+| Delta over baseline | **+30 percentage points** |
+| Training iterations | 5 |
+
+The large baseline-to-final gap (+30pp) reflects how much site-specific knowledge the base model lacked. Hacker News has many quirks that are not well-represented in general training data — the 501 karma threshold for downvoting, the `noprocrast` anti-procrastination feature, the hidden favorites URL, and the fact that HN has no dark mode, no follow feature, no DMs, and no notifications.
+
+**Quirks the model learned:**
+- Favorites: `news.ycombinator.com/favorites?id=USERNAME` — not linked anywhere in the UI
+- `noprocrast` setting: enables a self-imposed time limit using `maxvisit` and `minaway` fields
+- **501 karma** (not 500, not 1000) required to downvote comments
+- Dark mode, following users, direct messages, notifications — **HN has none of these**
+- Newest submissions: `/newest` — not discoverable through normal navigation
+
+### What the Expert Says
+
+```
+Q: How do I enable noprocrast on Hacker News?
+
+A: 1. Log in to your account.
+   2. Click your username in the top-right corner.
+   3. In your profile settings, find the noprocrast field and set it to yes.
+   4. Set maxvisit to the number of minutes you want to browse per session.
+   5. Set minaway to the number of minutes you must wait between sessions.
+   6. Click update to save.
+```
+
+```
+Q: How do I view a user's favorited posts on Hacker News?
+
+A: 1. Go to news.ycombinator.com/favorites?id=USERNAME
+   2. Replace USERNAME with the Hacker News username.
+   3. This page is not linked from the user's public profile —
+      you must construct the URL manually.
+```
+
+---
+
+## Adaptive Fine-Tuning: The Model Gets Better Over Time
+
+Every successful browser agent run is a training signal.
+
+When `run_browser_agent` completes a task successfully, it appends the full trajectory — the sequence of tool calls and their outcomes — to a local JSONL file at `data/training/{domain}/trajectories.jsonl`. Each trajectory is formatted as a decoder Q&A pair:
+
+```json
+{
+  "messages": [
+    {"role": "system", "content": "You are a navigation expert for console.cloud.google.com."},
+    {"role": "user", "content": "How do I: Create a firewall rule to allow HTTPS"},
+    {"role": "assistant", "content": "1. [ask_website_expert] {...}\n2. [bash] Navigate to /networking/firewalls/add\n3. [bash] Fill form fields..."}
+  ],
+  "_meta": {"recorded_at": "2026-03-19T...", "job_id": "54bbff9b-..."}
+}
+```
+
+These trajectories can be fed directly back to the **Auto Agent** as additional training data:
+
+```
+Browser agent completes task
+        │
+        ▼
+Trajectory appended to data/training/{domain}/trajectories.jsonl
+        │
+        ▼  (periodically / on trigger)
+Auto Agent receives: "Here are N new successful trajectories for {domain}.
+Merge them with the existing training data, retrain the navigation expert,
+and update the model registration."
+        │
+        ▼
+New model version registered → browser agent uses updated expert
+```
+
+This creates a **flywheel**: the more tasks the browser agent completes on a domain, the more examples the navigation expert has seen, and the fewer wrong turns future agents make. The model doesn't just know what was explicitly taught during the crawl — it learns from every real session.
+
+The browser agent traces are also sent to **LangSmith** (`auto-agent` project), giving full visibility into every LLM call, token count, tool use, and latency across both the browser agent and the auto agent training pipeline.
+
+---
+
+## How It Works — Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  WebTuning Pipeline                  │
+│                                                       │
+│  POST /webtuning/crawl                               │
+│       │                                               │
+│       ▼                                               │
+│  Auto Agent (Modal sandbox)                          │
+│  ├─ pip install playwright && install chromium       │
+│  ├─ Crawl site (20-30 pages, authenticated)          │
+│  ├─ web_search for domain knowledge                  │
+│  ├─ Generate 100-150 Q&A training pairs              │
+│  ├─ upload_dataset() → Pioneer                       │
+│  ├─ start_training() → Qwen/Qwen3-8B                 │
+│  ├─ Evaluate on test set → iterate                   │
+│  └─ Write deliverables.json {domain, job_id}         │
+│       │                                               │
+│       ▼                                               │
+│  Registry updated: domain → job_id                   │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│                  Browser Agent Loop                  │
+│                                                       │
+│  run_browser_agent(url, task, job_id)                │
+│  │                                                    │
+│  ├─ Step 1: ask_website_expert(domain, question)     │
+│  │     └─ HTTP → Pioneer inference (fine-tuned model)│
+│  │          • Returns: numbered steps + exact URLs   │
+│  │          • If unknown: "I don't have info on this"│
+│  │                                                    │
+│  ├─ If expert answered → execute steps directly      │
+│  └─ If SENTINEL → explore with Playwright (bash)     │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## The Decision Tree — GCP Specific
+
+![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
+
+> *Without the navigation expert, the agent must explore 30+ nodes across multiple levels before reaching the goal. With the expert, it takes the direct green path in 7 steps.*
+
+---
+
+## Model IDs
+
+| Domain | Model | Job ID | Platform |
+|---|---|---|---|
+| `news.ycombinator.com` | `hn-navigation-v5-qwen3-8b` | `f822a4f3-ebb7-4261-99ea-6cbf1e77a67c` | dev |
+| `console.cloud.google.com` | `gcp-console-nav-v2-qwen3-8b` | `54bbff9b-c211-4749-b920-d21191dff94c` | dev |
+
+---
+
+## Stack
+
+- **Auto Agent**: LangGraph + Claude Sonnet, Modal sandbox, Playwright
+- **Training**: Pioneer platform, `Qwen/Qwen3-8B`, decoder fine-tuning
+- **Browser Agent**: Anthropic SDK agentic loop, Playwright (local)
+- **Tracing**: LangSmith (`auto-agent` project)
+- **Auth**: Supabase JWT + Pioneer API keys
