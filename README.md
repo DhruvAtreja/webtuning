@@ -320,7 +320,7 @@ The browser agent traces are also sent to **LangSmith** (`auto-agent` project), 
 
 ---
 
-## The Decision Tree — GCP Specific
+## Results
 
 ![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
 
