@@ -2,6 +2,20 @@
 
 > *Fine-tune a website-specific navigation expert in minutes. Make your browser agent 4× faster and eliminate wrong trajectories.*
 
+## Table of Contents
+
+1. [Market Opportunity](#market-opportunity)
+2. [Why Browser Agents Still Fail](#why-browser-agents-still-fail)
+3. [The Decision Tree Problem](#the-decision-tree-problem)
+4. [WebTuning: Site-Specific Navigation Experts](#webtuning-site-specific-navigation-experts)
+5. [Demo 1 — Google Cloud Console](#demo-1--google-cloud-console)
+6. [Demo 2 — Hacker News](#demo-2--hacker-news)
+7. [Adaptive Fine-Tuning: The Model Gets Better Over Time](#adaptive-fine-tuning-the-model-gets-better-over-time)
+8. [How It Works — Architecture](#how-it-works--architecture)
+9. [Results](#results)
+10. [Model IDs](#model-ids)
+11. [Stack](#stack)
+
 ---
 
 ## Market Opportunity
@@ -329,6 +343,26 @@ The browser agent traces are also sent to **LangSmith** (`auto-agent` project), 
 ![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
 
 > *Without the navigation expert, the agent must explore 30+ nodes across multiple levels before reaching the goal. With the expert, it takes the direct green path in 7 steps.*
+
+The tree above visualises the core problem. At every level of GCP Console's navigation — from the top-level sidebar all the way down to the Create Firewall Rule form — the agent faces multiple possible choices. Without prior knowledge, it has to explore many of them, backtrack, and try again. The red nodes are wrong turns the no-expert agent actually took: APIs & Services, IAM, Marketplace (accidentally triggering an API enable flow), Compute Engine, Cloud Armor, Subnets, and Routes — before eventually landing on the right page.
+
+With the navigation expert, the agent receives the correct path on its very first tool call and follows it directly. The green path through the tree is the only path it ever touches.
+
+**Summary across both demos:**
+
+| Domain | Baseline | Final | Delta | Training time |
+|---|---|---|---|---|
+| Google Cloud Console | 93.9% | **100%** | +6.1pp | ~30 min |
+| Hacker News | 66.7% | **96.7%** | +30pp | ~45 min |
+
+| | With Expert | Without Expert |
+|---|---|---|
+| GCP steps | **7** | 30+ |
+| GCP time | **43s** | 3m 06s |
+| Wrong turns | **0** | 10+ |
+| First tool call | Expert answers immediately | SENTINEL — must explore |
+
+The gains are largest on Hacker News (+30pp) because the base model had almost no site-specific knowledge to begin with — `noprocrast`, the `favorites?id=` URL pattern, and the 501 karma threshold are simply not in general training data. On GCP, the base model already knew most of the console structure (93.9%) but missed recent UI changes like the Firewall Rules relocation and the IAM audit logs placement — exactly the kind of drift that WebTuning is designed to fix continuously.
 
 ---
 
