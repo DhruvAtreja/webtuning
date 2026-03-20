@@ -1,0 +1,95 @@
+GCP Console Navigation Expert — Model Q&A
+============================================================
+Model ID:   54bbff9b-c211-4749-b920-d21191dff94c
+Platform:   Pioneer (dev)
+Base model: Qwen/Qwen3-8B
+Accuracy:   100% on 33-question test set
+============================================================
+
+Q1: How do I navigate to Firewall Rules in GCP Console?
+
+1. Go to **Network Security** (`https://console.cloud.google.com/networking/firewalls/list`).
+2. Or navigate via **IAM & Admin → Network Security**.
+3. Or from the console menu: click the **☰ hamburger menu → Network Security → Firewall Rules**.
+4. The page lists all firewall rules with name, direction, priority, and protocol/ports.
+5. Click a rule name to edit/delete or view its configuration.
+
+------------------------------------------------------------
+
+Q2: What is the direct URL for the Create Firewall Rule form in GCP?
+
+1. Go to **Network Security → Firewall Rules** (`https://console.cloud.google.com/networking/firewall-rules/list`).
+2. Click **Create Firewall Rule** (top-right of the list page).
+3. The URL becomes: `https://console.cloud.google.com/networking/firewall-rules/create` — this is the direct URL to open the form.
+
+Use this URL directly in your browser or bookmark it.
+
+------------------------------------------------------------
+
+Q3: How do I create a firewall rule to allow HTTPS traffic on port 443?
+
+1. Go to **Network Security → Firewall Rules** (`https://console.cloud.google.com/networking/firewalls/list`).
+2. Click **Create Firewall Rule**.
+3. Name the rule `allow-https` (or any descriptive name).
+4. Set **Direction** to `INGRESS` (traffic coming into the VM).
+5. Under **Targets**, select `All instances in the network` or `All`, depending on your VPC.
+6. Under **Source filter**, select `All protocols/ports` or specify `https` (protocol) if needed — but HTTPS is a **secure** protocol, so specifying `https` might not match traffic correctly — it's safer to allow **all traffic** and then restrict later.
+7. Under **Targets**, specify the service account if needed.
+8. Under **Priority**, enter `1000` (lower number means higher priority).
+9. Click **Create**.
+10. Verify by sending a request to the service on port 443.
+
+Alternatively, Google Cloud automatically allows HTTPS traffic if your service is properly configured with a SSL certificate and exposed via Cloud Run, App Engine, or Load Balancer. The above rule is only needed if you're running VMs and want to allow HTTPS traffic directly.
+
+------------------------------------------------------------
+
+Q4: How do I navigate to create API credentials in GCP?
+
+1. Go to **APIs & Services → Credentials** (`https://console.cloud.google.com/apis/credentials`).
+2. Click **Create credentials → API key** (for an API key) or **OAuth client ID** (for client credentials).
+3. If creating an **OAuth client ID**, select **Application type** and **Authorized redirect URIs**.
+4. Click **Create** and copy the client ID and secret (if applicable).
+
+For an **API key**, it's displayed immediately after creation.
+
+------------------------------------------------------------
+
+Q5: How do I create a service account and download a JSON key?
+
+1. Go to **IAM & Admin → Service Accounts** (`https://console.cloud.google.com/iam-admin/serviceaccounts`).
+2. Click **Create Service Account**.
+3. Give it a **name** and **description**, then click **Continue**.
+4. Assign a role (e.g., `Viewer` for read-only, `Storage Object Admin` for bucket access).
+5. Click **Continue** and then **Done**.
+6. Click the **email address** of the service account to open its details.
+7. Click **Keys** → **Add Key** → **Create new key** → select **JSON** format.
+8. The JSON key file downloads automatically — save it securely.
+9. The key file grants access to the service account — use it in your app or API client.
+
+------------------------------------------------------------
+
+Q6: How do I switch projects in GCP Console?
+
+1. Open **Cloud Console** (`https://console.cloud.google.com/`).
+2. Click the **project picker** dropdown in the console header — it shows the current project name.
+3. A dialog opens listing all your **organization** and **folder**-scoped projects.
+4. Type part of the project name to filter results.
+5. Click the project name you want to switch to.
+6. The console updates to show resources for the new project.
+
+Alternatively, switch via the **☰ hamburger menu**:
+- Go to **IAM & Admin → Settings** — the project name is at the top of the settings page.
+- Click the project name to switch.
+
+------------------------------------------------------------
+
+Q7: How do I view audit logs for IAM changes?
+
+1. Go to **IAM & Admin → Audit Logs** (`https://console.cloud.google.com/iam-admin/audit`).
+2. The page lists all enabled audit log configurations.
+3. Find the service (`cloudresourcemanager.googleapis.com` for org/folder/ project-level, `iam.googleapis.com` for IAM policy changes).
+4. Click **Configure** to enable audit logging if not already enabled.
+5. To view logs, go to **Logging → Logs Explorer** and filter by `resource.type="organization"`, `resource.type="project"`, or `service="iam.googleapis.com"`.
+6. Use a query like `logName="projects/PROJECT_ID/logs/cloudresourcemanager.googleapis.com%2Factivity"` to filter IAM changes.
+
+------------------------------------------------------------
