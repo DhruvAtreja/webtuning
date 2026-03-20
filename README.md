@@ -73,6 +73,8 @@ The diagram below illustrates what a browser agent's trajectory actually looks l
 
 ![General decision tree](demo_videos/tree_diagram_general.png)
 
+> 💡 *Click the image to view full screen — text is easier to read at full size.*
+
 > *Task: "Find laptops under $500 with Prime shipping on Amazon." The green path is the optimal 6-step route. The red branches are the wrong turns an uninformed agent explores before finding it.*
 
 ---
@@ -127,6 +129,8 @@ GCP Console is notoriously difficult to navigate. Its UI changes frequently, pro
 ### Trajectory Comparison
 
 ![GCP trajectory comparison](demo_videos/demo_diagram_comparison.png)
+
+> 💡 *Click the image to view full screen — text is easier to read at full size.*
 
 | | With Navigation Expert | Without Navigation Expert |
 |---|---|---|
@@ -341,6 +345,8 @@ The browser agent traces are also sent to **LangSmith** (`auto-agent` project), 
 ## Results
 
 ![GCP decision tree](demo_videos/tree_diagram_trajectory.png)
+
+> 💡 *Click the image to view full screen — text is easier to read at full size.*
 
 > *Without the navigation expert, the agent must explore 30+ nodes across multiple levels before reaching the goal. With the expert, it takes the direct green path in 7 steps.*
 
