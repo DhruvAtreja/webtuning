@@ -194,8 +194,6 @@ Without the expert, the agent visited APIs & Services, IAM, VPC Networks, Subnet
 | Pages crawled | 31 |
 | Training examples | 116 |
 | Test set size | 33 questions |
-| Baseline accuracy (before fine-tuning) | 93.9% (31/33) |
-| Final accuracy | **100% (33/33)** |
 | Training iterations | 2 |
 
 **Quirks the model learned that the base model got wrong:**
@@ -254,12 +252,7 @@ Hacker News has a deliberately minimal UI with almost no documentation. Features
 | Pages crawled | 25 |
 | Training examples | 138 |
 | Test set size | 33 questions |
-| Baseline accuracy (before fine-tuning) | **66.7% (20/30)** |
-| Final accuracy | **96.7% (29/30) → ~100% on retry** |
-| Delta over baseline | **+30 percentage points** |
 | Training iterations | 5 |
-
-The large baseline-to-final gap (+30pp) reflects how much site-specific knowledge the base model lacked. Hacker News has many quirks that are not well-represented in general training data — the 501 karma threshold for downvoting, the `noprocrast` anti-procrastination feature, the hidden favorites URL, and the fact that HN has no dark mode, no follow feature, no DMs, and no notifications.
 
 **Quirks the model learned:**
 - Favorites: `news.ycombinator.com/favorites?id=USERNAME` — not linked anywhere in the UI
