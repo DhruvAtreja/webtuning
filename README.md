@@ -140,11 +140,11 @@ Without the expert, the agent visited APIs & Services, IAM, VPC Networks, Subnet
 
 **With Navigation Expert — 7 steps, 43 seconds:**
 
-[demo_videos/demo_expert_7steps.webm](demo_videos/demo_expert_7steps.webm)
+![Expert agent navigates directly to Firewall Rules](demo_videos/demo_expert_7steps.gif)
 
 **Without Navigation Expert — 30+ steps, 3 minutes 6 seconds:**
 
-[demo_videos/demo_no_expert_30steps.webm](demo_videos/demo_no_expert_30steps.webm)
+![No-expert agent wanders through wrong pages](demo_videos/demo_no_expert_30steps.gif)
 
 ### Navigation Expert Training Results
 
