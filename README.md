@@ -384,13 +384,6 @@ The tree above visualises the core problem. At every level of GCP Console's navi
 
 With the navigation expert, the agent receives the correct path on its very first tool call and follows it directly. The green path through the tree is the only path it ever touches.
 
-**Summary across both demos:**
-
-| Domain | Baseline | Final | Delta | Training time |
-|---|---|---|---|---|
-| Google Cloud Console | 93.9% | **100%** | +6.1pp | ~30 min |
-| Hacker News | 66.7% | **96.7%** | +30pp | ~45 min |
-
 | | With Expert | Without Expert |
 |---|---|---|
 | GCP steps | **7** | 30+ |
